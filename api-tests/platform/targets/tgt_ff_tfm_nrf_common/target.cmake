@@ -43,7 +43,7 @@ if(${SUITE} STREQUAL "IPC")
 		# Driver files will be compiled as part of driver partition
 		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_nrf_common/spe/pal_driver_intf.c
 		${PSA_ROOT_DIR}/platform/drivers/nvmem/pal_nvmem.c
-		${PSA_ROOT_DIR}/platform/drivers/watchdog/cmsdk/pal_wd_cmsdk.c
+		${PSA_ROOT_DIR}/platform/drivers/watchdog/nrfx/nrf_wdt.c
 	)
 endif()
 
@@ -67,6 +67,7 @@ list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/drivers/nvmem
 	${PSA_ROOT_DIR}/platform/drivers/uart/cmsdk
 	${PSA_ROOT_DIR}/platform/drivers/watchdog/cmsdk
+	${PSA_ROOT_DIR}/platform/drivers/watchdog/nrfx/
 )
 
 message(WARNING ${PSA_ROOT_DIR})

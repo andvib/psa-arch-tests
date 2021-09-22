@@ -90,9 +90,40 @@ int pal_print_ns(const char *str, int32_t data)
 **/
 int pal_wd_timer_init_ns(addr_t base_addr, uint32_t time_us, uint32_t timer_tick_us)
 {
-    (void)base_addr;
-    pal_timer_init_ns(time_us * timer_tick_us);
+    wd_param_t              wd_param;
+    psa_status_t            status_of_call = PSA_SUCCESS;
+
+    wd_param.wd_fn_type = WD_INIT_SEQ;
+    wd_param.wd_base_addr = base_addr;
+    wd_param.wd_time_us = time_us;
+    wd_param.wd_timer_tick_us = timer_tick_us;
+    psa_invec invec[1] = {{&wd_param, sizeof(wd_param)}};
+
+#if STATELESS_ROT == 1
+    status_of_call = psa_call(DRIVER_WATCHDOG_HANDLE, 0, invec, 1, NULL, 0);
+    if (status_of_call != PSA_SUCCESS)
+        return PAL_STATUS_ERROR;
+
     return PAL_STATUS_SUCCESS;
+#else
+
+    psa_handle_t            handle = 0;
+    handle = psa_connect(DRIVER_WATCHDOG_SID, DRIVER_WATCHDOG_VERSION);
+    if (PSA_HANDLE_IS_VALID(handle))
+    {
+        status_of_call = psa_call(handle, 0, invec, 1, NULL, 0);
+        psa_close(handle);
+        if (status_of_call != PSA_SUCCESS)
+            return PAL_STATUS_ERROR;
+
+        return PAL_STATUS_SUCCESS;
+    }
+    else
+    {
+        return PAL_STATUS_ERROR;
+    }
+#endif
+
 }
 
 /**
@@ -102,10 +133,38 @@ int pal_wd_timer_init_ns(addr_t base_addr, uint32_t time_us, uint32_t timer_tick
 **/
 int pal_wd_timer_enable_ns(addr_t base_addr)
 {
-    (void)base_addr;
-    pal_timer_start_ns();
-    return PAL_STATUS_SUCCESS;
+    wd_param_t              wd_param;
+    psa_status_t            status_of_call = PSA_SUCCESS;
 
+    wd_param.wd_fn_type = WD_ENABLE_SEQ;
+    wd_param.wd_base_addr = base_addr;
+    wd_param.wd_time_us = 0;
+    wd_param.wd_timer_tick_us = 0;
+    psa_invec invec[1] = {{&wd_param, sizeof(wd_param)}};
+
+#if STATELESS_ROT == 1
+    status_of_call = psa_call(DRIVER_WATCHDOG_HANDLE, 0, invec, 1, NULL, 0);
+    if (status_of_call != PSA_SUCCESS)
+        return PAL_STATUS_ERROR;
+
+    return PAL_STATUS_SUCCESS;
+#else
+    psa_handle_t            handle = 0;
+    handle = psa_connect(DRIVER_WATCHDOG_SID, DRIVER_WATCHDOG_VERSION);
+    if (PSA_HANDLE_IS_VALID(handle))
+    {
+        status_of_call = psa_call(handle, 0, invec, 1, NULL, 0);
+        psa_close(handle);
+        if (status_of_call != PSA_SUCCESS)
+            return PAL_STATUS_ERROR;
+
+        return PAL_STATUS_SUCCESS;
+    }
+    else
+    {
+        return PAL_STATUS_ERROR;
+    }
+#endif
 }
 
 /**
@@ -115,9 +174,39 @@ int pal_wd_timer_enable_ns(addr_t base_addr)
 **/
 int pal_wd_timer_disable_ns(addr_t base_addr)
 {
-    (void)base_addr;
-    pal_timer_stop_ns();
+    wd_param_t              wd_param;
+    psa_status_t            status_of_call = PSA_SUCCESS;
+
+    wd_param.wd_fn_type = WD_DISABLE_SEQ;
+    wd_param.wd_base_addr = base_addr;
+    wd_param.wd_time_us = 0;
+    wd_param.wd_timer_tick_us = 0;
+    psa_invec invec[1] = {{&wd_param, sizeof(wd_param)}};
+#if STATELESS_ROT == 1
+    status_of_call = psa_call(DRIVER_WATCHDOG_HANDLE, 0, invec, 1, NULL, 0);
+    if (status_of_call != PSA_SUCCESS)
+        return PAL_STATUS_ERROR;
+
     return PAL_STATUS_SUCCESS;
+#else
+    psa_handle_t            handle = 0;
+
+    handle = psa_connect(DRIVER_WATCHDOG_SID, DRIVER_WATCHDOG_VERSION);
+    if (PSA_HANDLE_IS_VALID(handle))
+    {
+        status_of_call = psa_call(handle, 0, invec, 1, NULL, 0);
+        psa_close(handle);
+        if (status_of_call != PSA_SUCCESS)
+            return PAL_STATUS_ERROR;
+
+        return PAL_STATUS_SUCCESS;
+    }
+    else
+    {
+        return PAL_STATUS_ERROR;
+    }
+#endif
+
 }
 
 /**

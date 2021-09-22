@@ -229,7 +229,6 @@ int pal_wd_timer_disable_ns(addr_t base_addr)
         return PAL_STATUS_ERROR;
     }
 #endif
-
 }
 
 /**
@@ -274,7 +273,6 @@ int pal_nvmem_read_ns(addr_t base, uint32_t offset, void *buffer, int size)
         return PAL_STATUS_ERROR;
     }
 #endif
-
 }
 
 /**
