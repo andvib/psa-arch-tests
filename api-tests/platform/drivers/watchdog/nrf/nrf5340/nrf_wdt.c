@@ -100,6 +100,8 @@ int nrf_wdt_init(addr_t base_addr, uint32_t time_us)
     nrf_wdt->CONFIG = ((WDT_CONFIG_STOPEN_Enable << WDT_CONFIG_STOPEN_Pos) |
                        (WDT_CONFIG_SLEEP_Run << WDT_CONFIG_SLEEP_Pos));
 
+    nrf_wdt->RREN = 0x01UL;
+
     return PAL_STATUS_SUCCESS;
 }
 
