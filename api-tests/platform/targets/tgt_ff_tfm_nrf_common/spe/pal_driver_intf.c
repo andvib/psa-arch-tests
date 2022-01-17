@@ -24,8 +24,7 @@
 #include "pal_nvmem.h"
 
 #include "nrf_wdt.h"
-
-extern int tfm_log_printf(const char *, ...);
+#include "nrf_uart.h"
 
 /* Get the address of a free, word-aligned, 1K memory area. */
 extern uint32_t pal_nvmem_get_addr(void);
@@ -40,7 +39,7 @@ extern void pal_interrupt_handler(void);
 **/
 void pal_uart_init(uint32_t uart_base_addr)
 {
-    (void)uart_base_addr;
+    pal_uart_nrf_init(uart_base_addr);
     return PAL_STATUS_SUCCESS;
 }
 
@@ -52,7 +51,7 @@ void pal_uart_init(uint32_t uart_base_addr)
 
 void pal_print(const char *str, int32_t data)
 {
-    tfm_log_printf(str, data);
+    pal_uart_nrf_print(str, data);
 }
 
 /**
@@ -142,8 +141,8 @@ int pal_wd_timer_is_enabled(addr_t base_addr)
 **/
 void pal_generate_interrupt(void)
 {
-    NRF_EGU5->INTENSET = 0x1;
-    NRF_EGU5->TASKS_TRIGGER[0] = 0x1;
+    pal_uart_nrf_enable_interrupt();
+    pal_uart_nrf_print(" ", 0);
 }
 
 /**
@@ -153,16 +152,5 @@ void pal_generate_interrupt(void)
 **/
 void pal_disable_interrupt(void)
 {
-    NRF_EGU5->INTENCLR = 0x1;
-}
-
-/**
-    @brief   - Interrupt handler for NRF_EGU5
-    @param   - void
-    @return  - void
-**/
-void EGU5_IRQHandler(void)
-{
-    /* Call TF-M platform interrupt handler */
-    pal_interrupt_handler();
+    pal_uart_nrf_disable_interrupt();
 }

@@ -21,7 +21,6 @@
 #include "pal_common.h"
 #include "pal_nvmem.h"
 
-extern int tfm_log_printf(const char *, ...);
 
 /* Initialize the timer with the given number of ticks. */
 extern void pal_timer_init_ns(uint32_t ticks);
@@ -83,8 +82,43 @@ int pal_uart_init_ns(uint32_t uart_base_addr)
 
 int pal_print_ns(const char *str, int32_t data)
 {
-    tfm_log_printf(str, data);
+    int             string_len = 0;
+    const char      *p = str;
+    psa_status_t    status_of_call = PSA_SUCCESS;
+    uart_fn_type_t  uart_fn = UART_PRINT;
+
+    while (*p != '\0')
+    {
+        string_len++;
+        p++;
+    }
+
+    psa_invec data1[3] = {{&uart_fn, sizeof(uart_fn)},
+                          {str, string_len+1},
+                          {&data, sizeof(data)}};
+#if STATELESS_ROT == 1
+    status_of_call = psa_call(DRIVER_UART_HANDLE, 0, data1, 3, NULL, 0);
+    if (status_of_call != PSA_SUCCESS)
+        return PAL_STATUS_ERROR;
+
     return PAL_STATUS_SUCCESS;
+#else
+    psa_handle_t    print_handle = 0;
+    print_handle = psa_connect(DRIVER_UART_SID, DRIVER_UART_VERSION);
+    if (PSA_HANDLE_IS_VALID(print_handle))
+    {
+        status_of_call = psa_call(print_handle, 0, data1, 3, NULL, 0);
+        psa_close(print_handle);
+        if (status_of_call != PSA_SUCCESS)
+            return PAL_STATUS_ERROR;
+
+        return PAL_STATUS_SUCCESS;
+    }
+    else
+    {
+        return PAL_STATUS_ERROR;
+    }
+#endif
 }
 
 /**

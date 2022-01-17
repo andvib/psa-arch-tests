@@ -43,6 +43,7 @@ if(${SUITE} STREQUAL "IPC")
 		# Driver files will be compiled as part of driver partition
 		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_nrf_common/spe/pal_driver_intf.c
 		${PSA_ROOT_DIR}/platform/drivers/nvmem/pal_nvmem.c
+		${PSA_ROOT_DIR}/platform/drivers/uart/nrf/nrf_uart.c
 	)
 
 	if(${PSA_API_TEST_TARGET} STREQUAL nrf9160)
@@ -75,8 +76,8 @@ endforeach()
 
 list(APPEND PAL_DRIVER_INCLUDE_PATHS
 	${PSA_ROOT_DIR}/platform/drivers/nvmem
-	${PSA_ROOT_DIR}/platform/drivers/uart/cmsdk
 	${PSA_ROOT_DIR}/platform/drivers/watchdog/nrf/
+	${PSA_ROOT_DIR}/platform/drivers/uart/nrf/
 )
 
 message(WARNING ${PSA_ROOT_DIR})

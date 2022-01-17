@@ -21,7 +21,6 @@
 #ifndef _PAL_DRIVER_INTF_H_
 #define _PAL_DRIVER_INTF_H_
 
-#include "pal_uart.h"
 #include "pal_nvmem.h"
 
 /* Following defines should be used for structure members */

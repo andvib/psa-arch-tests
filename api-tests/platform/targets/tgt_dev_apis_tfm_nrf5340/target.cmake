@@ -36,6 +36,7 @@ else()
 		${PSA_ROOT_DIR}/platform/targets/${TARGET}/nspe/pal_driver_intf.c
 		${PSA_ROOT_DIR}/platform/drivers/nvmem/pal_nvmem.c
 		${PSA_ROOT_DIR}/platform/drivers/watchdog/nrf/nrf_wdt.c
+		${PSA_ROOT_DIR}/platform/drivers/uart/nrf/nrf_uart.c
 	)
 endif()
 
@@ -67,6 +68,7 @@ endif()
 
 # Create NSPE library
 add_library(${PSA_TARGET_PAL_NSPE_LIB} STATIC ${PAL_SRC_C_NSPE} ${PAL_SRC_ASM_NSPE})
+target_compile_definitions(${PSA_TARGET_PAL_NSPE_LIB} PUBLIC NRF5340_XXAA_APPLICATION)
 
 # PSA Include directories
 foreach(psa_inc_path ${PSA_INCLUDE_PATHS})
@@ -81,6 +83,7 @@ target_include_directories(${PSA_TARGET_PAL_NSPE_LIB} PRIVATE
 	${PSA_ROOT_DIR}/platform/targets/common/nspe/initial_attestation
 	${PSA_ROOT_DIR}/platform/drivers/nvmem
 	${PSA_ROOT_DIR}/platform/drivers/watchdog/nrf/
+	${PSA_ROOT_DIR}/platform/drivers/uart/nrf/
 	${PSA_ROOT_DIR}/platform/targets/${TARGET}/nspe
 )
 

@@ -19,6 +19,7 @@
 #include "pal_nvmem.h"
 
 #include "nrf_wdt.h"
+#include "nrf_uart.h"
 
 /**
     @brief    - This function initializes the UART
@@ -27,7 +28,7 @@
 **/
 int pal_uart_init_ns(uint32_t uart_base_addr)
 {
-    (void)uart_base_addr;
+    pal_uart_nrf_init(uart_base_addr);
     return PAL_STATUS_SUCCESS;
 }
 
@@ -40,7 +41,7 @@ int pal_uart_init_ns(uint32_t uart_base_addr)
 
 int pal_print_ns(const char *str, int32_t data)
 {
-    tfm_log_printf(str, data);
+    pal_uart_nrf_print(str, data);
     return PAL_STATUS_SUCCESS;
 }
 
