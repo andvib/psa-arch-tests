@@ -37,7 +37,6 @@ if(${SUITE} STREQUAL "IPC")
 		# driver functionalities are implemented as RoT-services
 		# and secure and non-secure clients will call to these RoT-services to get appropriate driver services.
 		${PSA_ROOT_DIR}/platform/targets/tgt_ff_tfm_nrf_common/nspe/pal_driver_ipc_intf.c
-		${PSA_ROOT_DIR}/platform/drivers/nvmem/pal_nvmem.c
 	)
 	list(APPEND PAL_SRC_C_DRIVER_SP
 		# Driver files will be compiled as part of driver partition

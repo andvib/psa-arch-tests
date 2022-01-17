@@ -21,19 +21,6 @@
 #include "pal_common.h"
 #include "pal_nvmem.h"
 
-
-/* Initialize the timer with the given number of ticks. */
-extern void pal_timer_init_ns(uint32_t ticks);
-
-/* Start the timer. */
-extern void pal_timer_start_ns(void);
-
-/* Stop and reset the timer. */
-extern void pal_timer_stop_ns(void);
-
-/* Get the address of a free, word-aligned, 1K memory area. */
-extern uint32_t pal_nvmem_get_addr(void);
-
 /**
     @brief    - This function initializes the UART
     @param    - uart base addr
@@ -257,13 +244,38 @@ int pal_wd_timer_disable_ns(addr_t base_addr)
 **/
 int pal_nvmem_read_ns(addr_t base, uint32_t offset, void *buffer, int size)
 {
-    if (base != 0) {
-        /* Unexpected base address */
+    nvmem_param_t   nvmem_param;
+    psa_status_t    status_of_call = PSA_SUCCESS;
+
+    nvmem_param.nvmem_fn_type = NVMEM_READ;
+    nvmem_param.base = base;
+    nvmem_param.offset = offset;
+    nvmem_param.size = size;
+    psa_invec invec[1] = {{&nvmem_param, sizeof(nvmem_param)}};
+    psa_outvec outvec[1] = {{buffer, size}};
+#if STATELESS_ROT == 1
+    status_of_call = psa_call(DRIVER_NVMEM_HANDLE, 0, invec, 1, outvec, 1);
+    if (status_of_call != PSA_SUCCESS)
+        return PAL_STATUS_ERROR;
+
+    return PAL_STATUS_SUCCESS;
+#else
+    psa_handle_t    handle = 0;
+    handle = psa_connect(DRIVER_NVMEM_SID, DRIVER_NVMEM_VERSION);
+    if (PSA_HANDLE_IS_VALID(handle))
+    {
+        status_of_call = psa_call(handle, 0, invec, 1, outvec, 1);
+        psa_close(handle);
+        if (status_of_call != PSA_SUCCESS)
+            return PAL_STATUS_ERROR;
+
+        return PAL_STATUS_SUCCESS;
+    }
+    else
+    {
         return PAL_STATUS_ERROR;
     }
-    base = pal_nvmem_get_addr();
-    return nvmem_read(base, offset, buffer, size) ? PAL_STATUS_SUCCESS
-                                                  : PAL_STATUS_ERROR;
+#endif
 }
 
 /**
@@ -276,13 +288,38 @@ int pal_nvmem_read_ns(addr_t base, uint32_t offset, void *buffer, int size)
 **/
 int pal_nvmem_write_ns(addr_t base, uint32_t offset, void *buffer, int size)
 {
-    if (base != 0) {
-        /* Unexpected base address */
+    nvmem_param_t   nvmem_param;
+
+    psa_status_t    status_of_call = PSA_SUCCESS;
+
+    nvmem_param.nvmem_fn_type = NVMEM_WRITE;
+    nvmem_param.base = base;
+    nvmem_param.offset = offset;
+    nvmem_param.size = size;
+    psa_invec invec[2] = {{&nvmem_param, sizeof(nvmem_param)}, {buffer, size}};
+#if STATELESS_ROT == 1
+    status_of_call = psa_call(DRIVER_NVMEM_HANDLE, 0, invec, 2, NULL, 0);
+    if (status_of_call != PSA_SUCCESS)
+        return PAL_STATUS_ERROR;
+
+    return PAL_STATUS_SUCCESS;
+#else
+    psa_handle_t    handle = 0;
+    handle = psa_connect(DRIVER_NVMEM_SID, DRIVER_NVMEM_VERSION);
+    if (PSA_HANDLE_IS_VALID(handle))
+    {
+        status_of_call = psa_call(handle, 0, invec, 2, NULL, 0);
+        psa_close(handle);
+        if (status_of_call != PSA_SUCCESS)
+            return PAL_STATUS_ERROR;
+
+        return PAL_STATUS_SUCCESS;
+    }
+    else
+    {
         return PAL_STATUS_ERROR;
     }
-    base = pal_nvmem_get_addr();
-    return nvmem_write(base, offset, buffer, size) ? PAL_STATUS_SUCCESS
-                                                   : PAL_STATUS_ERROR;
+#endif
 }
 
 /**

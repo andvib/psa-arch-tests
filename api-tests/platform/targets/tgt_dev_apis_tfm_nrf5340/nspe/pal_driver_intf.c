@@ -79,6 +79,25 @@ int pal_wd_timer_disable_ns(addr_t base_addr)
     return nrf_wdt_disable(base_addr);
 }
 
+void prepare_nvmem(addr_t base)
+{
+    static uint8_t psa_nvmem_initialized = 0;
+    if(!psa_nvmem_initialized)
+    {
+        /* RESETREAS is located at the same address for 9160 and 5340 */
+        uint32_t* resetreas_reg = (uint32_t*)(0x40005400);
+        uint32_t reset_reason = *resetreas_reg;
+        int is_pinreset = reset_reason & (0x01UL << 0UL);
+
+        // Tests expects the NVMEM area to be set to all 0xFF for power-on or pin reset
+        if ((reset_reason == 0) || is_pinreset){
+            memset((void*)base, 0xFF, 0x3FF);
+        }
+        *resetreas_reg = reset_reason; // Clear RESETREAS register
+        psa_nvmem_initialized = 1;
+    }
+}
+
 /**
     @brief    - Reads from given non-volatile address.
     @param    - base    : Base address of nvmem
@@ -89,11 +108,7 @@ int pal_wd_timer_disable_ns(addr_t base_addr)
 **/
 int pal_nvmem_read_ns(addr_t base, uint32_t offset, void *buffer, int size)
 {
-    if (base != 0) {
-        /* Unexpected base address */
-        return PAL_STATUS_ERROR;
-    }
-    base = pal_nvmem_get_addr();
+    prepare_nvmem(base);
     return nvmem_read(base, offset, buffer, size) ? PAL_STATUS_SUCCESS
                                                   : PAL_STATUS_ERROR;
 }
@@ -108,11 +123,7 @@ int pal_nvmem_read_ns(addr_t base, uint32_t offset, void *buffer, int size)
 **/
 int pal_nvmem_write_ns(addr_t base, uint32_t offset, void *buffer, int size)
 {
-    if (base != 0) {
-        /* Unexpected base address */
-        return PAL_STATUS_ERROR;
-    }
-    base = pal_nvmem_get_addr();
+    prepare_nvmem(base);
     return nvmem_write(base, offset, buffer, size) ? PAL_STATUS_SUCCESS
                                                    : PAL_STATUS_ERROR;
 }
